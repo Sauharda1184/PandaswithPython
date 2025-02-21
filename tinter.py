@@ -36,25 +36,27 @@ def keyboard_tally_counter():
                 print("Tallying done.")
                 break  # Exit the loop when 'D' is pressed
 
-    return counts["right"], counts["through"], counts["left"], counts["u_turn"], counts["pedestrians"]
+    total_vehicles = counts["through"] + counts["left"] + counts["right"] + counts["u_turn"] + counts["pedestrians"]
+    return counts["right"], counts["through"], counts["left"], counts["u_turn"], counts["pedestrians"], total_vehicles
 
 def get_weather_input():
-    valid_conditions = ["Sunny", "Cold", "Hot", "Warm"]
+    valid_conditions = ["Sunny", "Cold", "Hot", "Warm", "Rainy", "Snowy"]
     while True:
-        weather = get_user_input("Enter weather condition (Sunny, Cold, Hot, Warm, etc.): ")
+        weather = get_user_input("Enter weather condition (Sunny, Cold, Hot, Warm, Rainy, Snowy etc.): ")
         if weather in valid_conditions:
             return weather
         else:
-            print("Invalid input. Please enter one of the following: Sunny, Cold, Hot, Warm.")
+            print("Invalid input. Please enter one of the following: Sunny, Cold, Hot, Warm, Rainy, Snowy.")
 
 def collect_traffic_data():
     """Function to collect traffic observation data and save to a CSV file."""
-    file_name = "traffic_observations.csv"
+    file_name = "traffic_intersection.csv"
     
     # Define CSV headers
     headers = [
         "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color", 
-        "Vehicles Turned Right", "Vehicles Went Through", "Vehicles Turned Left", "U Turns", "Pedestrians", "Camera Name"
+        "Vehicles Turned Right", "Vehicles Went Through", "Vehicles Turned Left", "U Turns", "Pedestrians", 
+        "Total Vehicles", "Camera Name"
     ]
     
     # Open the file and check if headers exist
@@ -68,17 +70,17 @@ def collect_traffic_data():
             writer.writerow(headers)
 
     # Use keyboard tally system for vehicle counts
-    vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians = keyboard_tally_counter()
+    vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, total_vehicles = keyboard_tally_counter()
 
     # GUI for data collection
     root = tk.Tk()
     root.title("Traffic Data Collection")
 
     def validate_weather():
-        valid_conditions = ["Sunny", "Cold", "Hot", "Warm"]
+        valid_conditions = ["Sunny", "Cold", "Hot", "Warm", "Rainy", "Snowy"]
         weather = weather_entry.get()
         if weather not in valid_conditions:
-            messagebox.showerror("Invalid Input", "Please enter a valid weather condition: Sunny, Cold, Hot, Warm.")
+            messagebox.showerror("Invalid Input", "Please enter a valid weather condition: Sunny, Cold, Hot, Warm, Rainy, Snowy.")
             return False
         return True
 
@@ -100,7 +102,7 @@ def collect_traffic_data():
             writer = csv.writer(f)
             writer.writerow([
                 time_interval, date, weather, detection_zone_stuck, detection_zone_changing, 
-                vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, camera_name_entry.get()
+                vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, total_vehicles, camera_name_entry.get()
             ])
         
         messagebox.showinfo("Success", "Data recorded successfully!")
