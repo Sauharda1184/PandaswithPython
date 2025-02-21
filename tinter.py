@@ -10,26 +10,42 @@ def get_user_input(prompt):
 
 def keyboard_tally_counter():
     """Function to count vehicles using keyboard shortcuts."""
-    counts = {"right": 0, "through": 0, "left": 0}
-    print("Start tallying. Press 'R' for right turns, 'T' for through, 'L' for left turns. Press 'D' when done.")
+    counts = {"u_turn": 0, "left": 0, "through": 0, "right": 0, "pedestrians": 0}
+    print("Start tallying. Press 'Q' for U turns, 'W' for left turns, 'E' for vehicles through, 'R' for right turns, 'T' for pedestrians. Press 'D' when done.")
 
     while True:
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
-            if event.name == 'r':
+            if event.name == 'q':
+                counts["u_turn"] += 1
+                print(f"U Turns: {counts['u_turn']}")
+            elif event.name == 'w':
+                counts["left"] += 1
+                print(f"Left Turns: {counts['left']}")
+            elif event.name == 'e':
+                counts["through"] += 1
+                print(f"Vehicles Through: {counts['through']}")
+            elif event.name == 'r':
                 counts["right"] += 1
                 print(f"Right Turns: {counts['right']}")
             elif event.name == 't':
-                counts["through"] += 1
-                print(f"Vehicles Through: {counts['through']}")
-            elif event.name == 'l':
-                counts["left"] += 1
-                print(f"Left Turns: {counts['left']}")
+                counts["pedestrians"] += 1
+                print(f"Pedestrians: {counts['pedestrians']}")
             elif event.name == 'd':
                 keyboard.clear_all_hotkeys()  # Clear the keyboard event buffer
-                break
-    
-    return counts["right"], counts["through"], counts["left"]
+                print("Tallying done.")
+                break  # Exit the loop when 'D' is pressed
+
+    return counts["right"], counts["through"], counts["left"], counts["u_turn"], counts["pedestrians"]
+
+def get_weather_input():
+    valid_conditions = ["Sunny", "Cold", "Hot", "Warm"]
+    while True:
+        weather = get_user_input("Enter weather condition (Sunny, Cold, Hot, Warm, etc.): ")
+        if weather in valid_conditions:
+            return weather
+        else:
+            print("Invalid input. Please enter one of the following: Sunny, Cold, Hot, Warm.")
 
 def collect_traffic_data():
     """Function to collect traffic observation data and save to a CSV file."""
@@ -37,8 +53,8 @@ def collect_traffic_data():
     
     # Define CSV headers
     headers = [
-        "Time Interval", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color", 
-        "Vehicles Turned Right", "Vehicles Went Through", "Vehicles Turned Left", "Camera Name"
+        "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color", 
+        "Vehicles Turned Right", "Vehicles Went Through", "Vehicles Turned Left", "U Turns", "Pedestrians", "Camera Name"
     ]
     
     # Open the file and check if headers exist
@@ -50,6 +66,9 @@ def collect_traffic_data():
         with open(file_name, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(headers)
+
+    # Use keyboard tally system for vehicle counts
+    vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians = keyboard_tally_counter()
 
     # GUI for data collection
     root = tk.Tk()
@@ -67,34 +86,40 @@ def collect_traffic_data():
         if not validate_weather():
             return
         
-        # Get the current time interval
-        start_time = datetime.datetime.now().strftime("%I:%M %p")
-        end_time = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%I:%M %p")
-        time_interval = f"{start_time} - {end_time}"
+        # Get the time interval and date from user input
+        time_interval = time_interval_entry.get()
+        date = date_entry.get()
 
         # Collect observations
         weather = weather_entry.get()
         detection_zone_stuck = stuck_var.get()
         detection_zone_changing = changing_var.get()
         
-        # Use keyboard tally system for vehicle counts
-        vehicles_right, vehicles_through, vehicles_left = keyboard_tally_counter()
-
         # Save data to CSV file
         with open(file_name, "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([
-                time_interval, weather, detection_zone_stuck, detection_zone_changing, 
-                vehicles_right, vehicles_through, vehicles_left, camera_name_entry.get()
+                time_interval, date, weather, detection_zone_stuck, detection_zone_changing, 
+                vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, camera_name_entry.get()
             ])
         
         messagebox.showinfo("Success", "Data recorded successfully!")
         
         # Clear inputs for next entry
         weather_entry.delete(0, tk.END)
+        time_interval_entry.delete(0, tk.END)
+        date_entry.delete(0, tk.END)
         camera_name_entry.delete(0, tk.END)
 
     # GUI Elements
+    tk.Label(root, text="Time Interval (hh:mm:ss):").pack()
+    time_interval_entry = tk.Entry(root)
+    time_interval_entry.pack()
+
+    tk.Label(root, text="Date (mm/dd/yyyy):").pack()
+    date_entry = tk.Entry(root)
+    date_entry.pack()
+
     tk.Label(root, text="Weather Condition:").pack()
     weather_entry = tk.Entry(root)
     weather_entry.pack()
