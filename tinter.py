@@ -87,8 +87,8 @@ def collect_traffic_data():
             return
         
         # Get the time interval and date from user input
-        time_interval = time_interval_entry.get()
-        date = date_entry.get()
+        time_interval = time_interval_entry.get()  # Format: "10:00:00 to 10:15:00"
+        date = date_entry.get()  # Format: "mm/dd/yyyy"
 
         # Collect observations
         weather = weather_entry.get()
@@ -112,7 +112,7 @@ def collect_traffic_data():
         camera_name_entry.delete(0, tk.END)
 
     # GUI Elements
-    tk.Label(root, text="Time Interval (hh:mm:ss):").pack()
+    tk.Label(root, text="Time Interval (hh:mm:ss to hh:mm:ss):").pack()
     time_interval_entry = tk.Entry(root)
     time_interval_entry.pack()
 
