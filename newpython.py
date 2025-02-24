@@ -9,8 +9,8 @@ def get_user_input(prompt):
 
 def keyboard_tally_counter():
     """Function to count vehicles using keyboard shortcuts at a 4-camera intersection with 15-minute intervals."""
-    directions = ["EBL", "EBT", "EBR", "WBL", "WBT", "WBR", "NBL", "NBT", "NBR", "SBL", "SBT", "SBR"]
-    counts = {dir: 0 for dir in directions}
+    directions = {"1": "SB", "2": "EB", "3": "NB", "4": "WB"}
+    counts = {f"{dir}{move}": 0 for dir in directions.values() for move in ["L", "B", "T", "R"]}
     
     print("Start tallying. Use keys 1-4 to select direction (1: SB, 2: EB, 3: NB, 4: WB)")
     print("Then use 'Q' for U turns, 'W' for left turns, 'E' for through, 'R' for right. Press 'D' when done.")
@@ -24,19 +24,12 @@ def keyboard_tally_counter():
         if (current_time - start_time) >= interval:
             break
         
-        if keyboard.is_pressed('1'):
-            current_direction = "SB"
-            print("Now recording for South Bound (SB)")
-        elif keyboard.is_pressed('2'):
-            current_direction = "EB"
-            print("Now recording for East Bound (EB)")
-        elif keyboard.is_pressed('3'):
-            current_direction = "NB"
-            print("Now recording for North Bound (NB)")
-        elif keyboard.is_pressed('4'):
-            current_direction = "WB"
-            print("Now recording for West Bound (WB)")
-        elif keyboard.is_pressed('q'):
+        for key, direction in directions.items():
+            if keyboard.is_pressed(key) and current_direction != direction:
+                current_direction = direction
+                print(f"Now recording for {current_direction}")
+        
+        if keyboard.is_pressed('q'):
             counts[f"{current_direction}L"] += 1
         elif keyboard.is_pressed('w'):
             counts[f"{current_direction}B"] += 1
@@ -69,5 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-          
