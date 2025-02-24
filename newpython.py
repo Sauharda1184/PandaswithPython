@@ -10,11 +10,12 @@ def get_user_input(prompt):
 def keyboard_tally_counter():
     """Function to count vehicles using keyboard shortcuts at a 4-camera intersection with 15-minute intervals."""
     directions = ["EBL", "EBT", "EBR", "WBL", "WBT", "WBR", "NBL", "NBT", "NBR", "SBL", "SBT", "SBR"]
-    counts = {dir: [] for dir in directions}
+    counts = {dir: 0 for dir in directions}
     
     print("Start tallying. Use keys 1-4 to select direction (1: SB, 2: EB, 3: NB, 4: WB)")
     print("Then use 'Q' for U turns, 'W' for left turns, 'E' for through, 'R' for right. Press 'D' when done.")
     
+    current_direction = "SB"
     start_time = datetime.datetime.now()
     interval = datetime.timedelta(minutes=15)
     
@@ -23,21 +24,29 @@ def keyboard_tally_counter():
         if (current_time - start_time) >= interval:
             break
         
-        event = keyboard.read_event()
-        if event.event_type == keyboard.KEY_DOWN:
-            if event.name == 'q':
-                counts["EBL"].append(1)
-            elif event.name == 'w':
-                counts["WBL"].append(1)
-            elif event.name == 'e':
-                counts["NBT"].append(1)
-            elif event.name == 'r':
-                counts["SBT"].append(1)
-            elif event.name == 'd':
-                break
-    
-    for key in counts:
-        counts[key] = sum(counts[key])
+        if keyboard.is_pressed('1'):
+            current_direction = "SB"
+            print("Now recording for South Bound (SB)")
+        elif keyboard.is_pressed('2'):
+            current_direction = "EB"
+            print("Now recording for East Bound (EB)")
+        elif keyboard.is_pressed('3'):
+            current_direction = "NB"
+            print("Now recording for North Bound (NB)")
+        elif keyboard.is_pressed('4'):
+            current_direction = "WB"
+            print("Now recording for West Bound (WB)")
+        elif keyboard.is_pressed('q'):
+            counts[f"{current_direction}L"] += 1
+        elif keyboard.is_pressed('w'):
+            counts[f"{current_direction}B"] += 1
+        elif keyboard.is_pressed('e'):
+            counts[f"{current_direction}T"] += 1
+        elif keyboard.is_pressed('r'):
+            counts[f"{current_direction}R"] += 1
+        elif keyboard.is_pressed('d'):
+            print("Exiting data collection...")
+            break
     
     return counts
 
@@ -60,3 +69,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+          
