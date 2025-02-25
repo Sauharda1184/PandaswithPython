@@ -8,36 +8,66 @@ def get_user_input(prompt):
     """Helper function to get user input with validation."""
     return input(prompt).strip()
 
-def keyboard_tally_counter():
-    """Function to count vehicles using keyboard shortcuts."""
+def keyboard_tally_counter(direction):
+    """Function to count vehicles using keyboard shortcuts for a specific direction."""
     counts = {"u_turn": 0, "left": 0, "through": 0, "right": 0, "pedestrians": 0}
-    print("Start tallying. Press 'Q' for U turns, 'W' for left turns, 'E' for vehicles through, 'R' for right turns, 'T' for pedestrians. Press 'D' when done.")
-
+    direction_names = {
+        "SB": "South Bound",
+        "EB": "East Bound",
+        "NB": "North Bound",
+        "WB": "West Bound"
+    }
+    
+    print(f"\nCounting for {direction_names[direction]} ({direction})")
+    print("Press 'Q' for U turns, 'W' for left turns, 'E' for vehicles through, 'R' for right turns, 'T' for pedestrians.")
+    print("Press 'D' when done with this direction.")
+    
     while True:
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
             if event.name == 'q':
                 counts["u_turn"] += 1
-                print(f"U Turns: {counts['u_turn']}")
+                print(f"{direction} U Turns: {counts['u_turn']}")
             elif event.name == 'w':
                 counts["left"] += 1
-                print(f"Left Turns: {counts['left']}")
+                print(f"{direction} Left Turns: {counts['left']}")
             elif event.name == 'e':
                 counts["through"] += 1
-                print(f"Vehicles Through: {counts['through']}")
+                print(f"{direction} Through: {counts['through']}")
             elif event.name == 'r':
                 counts["right"] += 1
-                print(f"Right Turns: {counts['right']}")
+                print(f"{direction} Right Turns: {counts['right']}")
             elif event.name == 't':
                 counts["pedestrians"] += 1
-                print(f"Pedestrians: {counts['pedestrians']}")
+                print(f"{direction} Pedestrians: {counts['pedestrians']}")
             elif event.name == 'd':
-                keyboard.clear_all_hotkeys()  # Clear the keyboard event buffer
-                print("Tallying done.")
+                print(f"Finished counting for {direction_names[direction]}.")
                 break  # Exit the loop when 'D' is pressed
+    
+    return counts
 
-    total_vehicles = counts["through"] + counts["left"] + counts["right"] + counts["u_turn"] + counts["pedestrians"]
-    return counts["right"], counts["through"], counts["left"], counts["u_turn"], counts["pedestrians"], total_vehicles
+def select_direction():
+    """Function to select which direction to count for."""
+    print("\nSelect direction to count:")
+    print("1: South Bound (SB)")
+    print("2: East Bound (EB)")
+    print("3: North Bound (NB)")
+    print("4: West Bound (WB)")
+    print("5: Finish data collection")
+    
+    while True:
+        event = keyboard.read_event()
+        if event.event_type == keyboard.KEY_DOWN:
+            if event.name == '1':
+                return "SB"
+            elif event.name == '2':
+                return "EB"
+            elif event.name == '3':
+                return "NB"
+            elif event.name == '4':
+                return "WB"
+            elif event.name == '5':
+                return None
 
 def get_weather_input():
     valid_conditions = ["Sunny", "Cold", "Hot", "Warm", "Rainy", "Snowy"]
@@ -50,12 +80,15 @@ def get_weather_input():
 
 def collect_traffic_data():
     """Function to collect traffic observation data and save to a CSV file."""
-    file_name = "traffic_intersectionNew.csv"
+    file_name = "intersection_traffic_data.csv"
     
     # Define CSV headers
     headers = [
-        "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color", 
-        "Vehicles Turned Right", "Vehicles Went Through", "Vehicles Turned Left", "U Turns", "Pedestrians", 
+        "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color",
+        "SBR", "SBT", "SBL", "SBU", "SBP",
+        "EBR", "EBT", "EBL", "EBU", "EBP",
+        "NBR", "NBT", "NBL", "NBU", "NBP",
+        "WBR", "WBT", "WBL", "WBU", "WBP",
         "Total Vehicles", "Camera Name"
     ]
     
@@ -69,12 +102,40 @@ def collect_traffic_data():
             writer = csv.writer(f)
             writer.writerow(headers)
 
-    # Use keyboard tally system for vehicle counts
-    vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, total_vehicles = keyboard_tally_counter()
-
-    # GUI for data collection
+    # Initialize counts for all directions
+    direction_counts = {
+        "SB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
+        "EB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
+        "NB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
+        "WB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0}
+    }
+    
+    print("Starting intersection traffic data collection.")
+    print("You will be able to count for each direction separately.")
+    
+    # Collect data for each direction
+    while True:
+        direction = select_direction()
+        if direction is None:
+            break
+        
+        counts = keyboard_tally_counter(direction)
+        direction_counts[direction]["right"] = counts["right"]
+        direction_counts[direction]["through"] = counts["through"]
+        direction_counts[direction]["left"] = counts["left"]
+        direction_counts[direction]["u_turn"] = counts["u_turn"]
+        direction_counts[direction]["pedestrians"] = counts["pedestrians"]
+    
+    # Calculate total vehicles
+    total_vehicles = 0
+    for direction in direction_counts:
+        for movement in ["right", "through", "left", "u_turn", "pedestrians"]:
+            if movement != "pedestrians":  # Don't count pedestrians in vehicle total
+                total_vehicles += direction_counts[direction][movement]
+    
+    # GUI for additional data collection
     root = tk.Tk()
-    root.title("Traffic Data Collection")
+    root.title("Intersection Traffic Data Collection")
 
     def validate_weather():
         valid_conditions = ["Sunny", "Cold", "Hot", "Warm", "Rainy", "Snowy"]
@@ -101,17 +162,20 @@ def collect_traffic_data():
         with open(file_name, "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([
-                time_interval, date, weather, detection_zone_stuck, detection_zone_changing, 
-                vehicles_right, vehicles_through, vehicles_left, vehicles_u_turn, vehicles_pedestrians, total_vehicles, camera_name_entry.get()
+                time_interval, date, weather, detection_zone_stuck, detection_zone_changing,
+                direction_counts["SB"]["right"], direction_counts["SB"]["through"], direction_counts["SB"]["left"], 
+                direction_counts["SB"]["u_turn"], direction_counts["SB"]["pedestrians"],
+                direction_counts["EB"]["right"], direction_counts["EB"]["through"], direction_counts["EB"]["left"], 
+                direction_counts["EB"]["u_turn"], direction_counts["EB"]["pedestrians"],
+                direction_counts["NB"]["right"], direction_counts["NB"]["through"], direction_counts["NB"]["left"], 
+                direction_counts["NB"]["u_turn"], direction_counts["NB"]["pedestrians"],
+                direction_counts["WB"]["right"], direction_counts["WB"]["through"], direction_counts["WB"]["left"], 
+                direction_counts["WB"]["u_turn"], direction_counts["WB"]["pedestrians"],
+                total_vehicles, camera_name_entry.get()
             ])
         
         messagebox.showinfo("Success", "Data recorded successfully!")
-        
-        # Clear inputs for next entry
-        weather_entry.delete(0, tk.END)
-        time_interval_entry.delete(0, tk.END)
-        date_entry.delete(0, tk.END)
-        camera_name_entry.delete(0, tk.END)
+        root.destroy()
 
     # GUI Elements
     tk.Label(root, text="Time Interval (hh:mm:ss to hh:mm:ss):").pack()
