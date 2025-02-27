@@ -10,7 +10,7 @@ def get_user_input(prompt):
 
 def keyboard_tally_counter(direction):
     """Function to count vehicles using keyboard shortcuts for a specific direction."""
-    counts = {"u_turn": 0, "left": 0, "through": 0, "right": 0, "pedestrians": 0}
+    counts = {"left": 0, "through": 0, "right": 0}
     direction_names = {
         "SB": "South Bound",
         "EB": "East Bound",
@@ -19,16 +19,13 @@ def keyboard_tally_counter(direction):
     }
     
     print(f"\nCounting for {direction_names[direction]} ({direction})")
-    print("Press 'Q' for U turns, 'W' for left turns, 'E' for vehicles through, 'R' for right turns, 'T' for pedestrians.")
+    print("Press 'W' for left turns, 'E' for vehicles through, 'R' for right turns.")
     print("Press 'D' when done with this direction.")
     
     while True:
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
-            if event.name == 'q':
-                counts["u_turn"] += 1
-                print(f"{direction} U Turns: {counts['u_turn']}")
-            elif event.name == 'w':
+            if event.name == 'w':
                 counts["left"] += 1
                 print(f"{direction} Left Turns: {counts['left']}")
             elif event.name == 'e':
@@ -37,9 +34,6 @@ def keyboard_tally_counter(direction):
             elif event.name == 'r':
                 counts["right"] += 1
                 print(f"{direction} Right Turns: {counts['right']}")
-            elif event.name == 't':
-                counts["pedestrians"] += 1
-                print(f"{direction} Pedestrians: {counts['pedestrians']}")
             elif event.name == 'd':
                 print(f"Finished counting for {direction_names[direction]}.")
                 break  # Exit the loop when 'D' is pressed
@@ -81,14 +75,14 @@ def get_weather_input():
 def collect_traffic_data():
     """Function to collect traffic observation data and save to a CSV file."""
     file_name = "intersection_traffic_new.csv"
-    1
+    
     # Define CSV headers
     headers = [
         "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color",
-        "SBR", "SBT", "SBL", "SBU", "SBP",
-        "EBR", "EBT", "EBL", "EBU", "EBP",
-        "NBR", "NBT", "NBL", "NBU", "NBP",
-        "WBR", "WBT", "WBL", "WBU", "WBP",
+        "SBR", "SBT", "SBL",
+        "EBR", "EBT", "EBL",
+        "NBR", "NBT", "NBL",
+        "WBR", "WBT", "WBL",
         "Total Vehicles", "Camera Name"
     ]
     
@@ -104,10 +98,10 @@ def collect_traffic_data():
 
     # Initialize counts for all directions
     direction_counts = {
-        "SB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
-        "EB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
-        "NB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0},
-        "WB": {"right": 0, "through": 0, "left": 0, "u_turn": 0, "pedestrians": 0}
+        "SB": {"right": 0, "through": 0, "left": 0},
+        "EB": {"right": 0, "through": 0, "left": 0},
+        "NB": {"right": 0, "through": 0, "left": 0},
+        "WB": {"right": 0, "through": 0, "left": 0}
     }
     
     print("Starting intersection traffic data collection.")
@@ -123,15 +117,12 @@ def collect_traffic_data():
         direction_counts[direction]["right"] = counts["right"]
         direction_counts[direction]["through"] = counts["through"]
         direction_counts[direction]["left"] = counts["left"]
-        direction_counts[direction]["u_turn"] = counts["u_turn"]
-        direction_counts[direction]["pedestrians"] = counts["pedestrians"]
     
     # Calculate total vehicles
     total_vehicles = 0
     for direction in direction_counts:
-        for movement in ["right", "through", "left", "u_turn", "pedestrians"]:
-            if movement != "pedestrians":  # Don't count pedestrians in vehicle total
-                total_vehicles += direction_counts[direction][movement]
+        for movement in ["right", "through", "left"]:
+            total_vehicles += direction_counts[direction][movement]
     
     # GUI for additional data collection
     root = tk.Tk()
@@ -163,14 +154,10 @@ def collect_traffic_data():
             writer = csv.writer(f)
             writer.writerow([
                 time_interval, date, weather, detection_zone_stuck, detection_zone_changing,
-                direction_counts["SB"]["right"], direction_counts["SB"]["through"], direction_counts["SB"]["left"], 
-                direction_counts["SB"]["u_turn"], direction_counts["SB"]["pedestrians"],
-                direction_counts["EB"]["right"], direction_counts["EB"]["through"], direction_counts["EB"]["left"], 
-                direction_counts["EB"]["u_turn"], direction_counts["EB"]["pedestrians"],
-                direction_counts["NB"]["right"], direction_counts["NB"]["through"], direction_counts["NB"]["left"], 
-                direction_counts["NB"]["u_turn"], direction_counts["NB"]["pedestrians"],
-                direction_counts["WB"]["right"], direction_counts["WB"]["through"], direction_counts["WB"]["left"], 
-                direction_counts["WB"]["u_turn"], direction_counts["WB"]["pedestrians"],
+                direction_counts["SB"]["right"], direction_counts["SB"]["through"], direction_counts["SB"]["left"],
+                direction_counts["EB"]["right"], direction_counts["EB"]["through"], direction_counts["EB"]["left"],
+                direction_counts["NB"]["right"], direction_counts["NB"]["through"], direction_counts["NB"]["left"],
+                direction_counts["WB"]["right"], direction_counts["WB"]["through"], direction_counts["WB"]["left"],
                 total_vehicles, camera_name_entry.get()
             ])
         
@@ -210,3 +197,10 @@ def collect_traffic_data():
 
 if __name__ == "__main__":
     collect_traffic_data()
+    
+           
+   
+ 
+
+      
+   
