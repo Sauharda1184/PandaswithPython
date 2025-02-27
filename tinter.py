@@ -80,8 +80,8 @@ def get_weather_input():
 
 def collect_traffic_data():
     """Function to collect traffic observation data and save to a CSV file."""
-    file_name = "intersection_traffic_data.csv"
-    
+    file_name = "intersection_traffic_new.csv"
+    1
     # Define CSV headers
     headers = [
         "Time Interval", "Date", "Weather", "Detection Zone Stuck", "Detection Zones Changing Color",
