@@ -1,0 +1,179 @@
+Sub Refresh_Data()
+'
+' Refresh_Data Macro
+'
+    On Error GoTo errMethod
+    
+    Dim dummytimer As Double
+    dummytimer = 0.1
+
+    Application.StatusBar = "Updating..."
+
+    ' Set initial progress
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+    'Application.ScreenUpdating = True
+
+    ' hide what's going on in the background
+    'Application.ScreenUpdating = False
+    
+
+    ' ActiveWorkbook.RefreshAll
+    ' Dim con As WorkbookConnection
+    
+    ' Refresh Comm Manager
+    ActiveWorkbook.Connections("Query - device-info Comm Manager").refresh
+    ' Refresh screen
+    refresh
+    
+    
+    ' Refresh cameras only if comm manager was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("commflag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - device-info Camera 1").refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 2").refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 3").refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 4").refresh
+        refresh
+    End If
+    
+    ' Refresh screen
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.2
+    DoEvents
+    
+    ' Refresh Cam 1 statistics only if Cam 1 info was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("cam1flag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - Speed Cam 1").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.25
+        DoEvents
+        ActiveWorkbook.Connections("Query - Turn Counts Cam 1").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.3
+        DoEvents
+        ActiveWorkbook.Connections("Query - Volume Cam 1").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.35
+        DoEvents
+        ActiveWorkbook.Connections("Query - Occupancy Cam 1").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.4
+        DoEvents
+    Else
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.25
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.3
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.35
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.4
+        sov (dummytimer)
+    End If
+
+    
+    ' Refresh Cam 2 statistics only if Cam 2 info was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("cam2flag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - Speed Cam 2").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.45
+        DoEvents
+        ActiveWorkbook.Connections("Query - Turn Counts Cam 2").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.5
+        DoEvents
+        ActiveWorkbook.Connections("Query - Volume Cam 2").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.55
+        DoEvents
+        ActiveWorkbook.Connections("Query - Occupancy Cam 2").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.6
+        DoEvents
+    Else
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.45
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.5
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.55
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.6
+        sov (dummytimer)
+    End If
+    
+    
+    ' Refresh Cam 3 statistics only if Cam 3 info was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("cam3flag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - Speed Cam 3").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.65
+        DoEvents
+        ActiveWorkbook.Connections("Query - Turn Counts Cam 3").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.7
+        DoEvents
+        ActiveWorkbook.Connections("Query - Volume Cam 3").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.75
+        DoEvents
+        ActiveWorkbook.Connections("Query - Occupancy Cam 3").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.8
+        DoEvents
+    Else
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.65
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.7
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.75
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.8
+        sov (dummytimer)
+    End If
+    
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.8
+    
+    ' Refresh Cam 4 statistics only if Cam 4 info was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("cam4flag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - Speed Cam 4").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.85
+        DoEvents
+        ActiveWorkbook.Connections("Query - Turn Counts Cam 4").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.9
+        DoEvents
+        ActiveWorkbook.Connections("Query - Volume Cam 4").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.95
+        DoEvents
+        ActiveWorkbook.Connections("Query - Occupancy Cam 4").refresh
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 1#
+        DoEvents
+    Else
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.85
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.9
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.95
+        sov (dummytimer)
+        ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 1#
+    End If
+
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = Now
+    Application.StatusBar = False
+
+    Exit Sub
+    
+errMethod:
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = "Error occurred during import!"
+    Application.StatusBar = False
+
+End Sub
+
+Public Function sov(sekunder As Double) As Double
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
+
+
