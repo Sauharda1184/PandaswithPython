@@ -1,0 +1,78 @@
+Traffic Data Collection Program - User Manual
+
+Overview
+
+This program simplifies traffic observation data collection using convenient keyboard shortcuts. It allows easy tallying of vehicle movements—left turns, vehicles going straight, right turns—and automatically saves your records and observations in a CSV (Excel-compatible) file.
+
+Prerequisites
+
+Before starting, please ensure your computer has:
+
+Python installed (download from python.org).
+Visual Studio Code (VS Code) installed (download from code.visualstudio.com).
+Python Extension installed in Visual Studio Code (instructions below).
+Keyboard library installed for Python.
+Installing Python Extension in VS Code
+Open Visual Studio Code.
+Click on the Extensions button (square icon) on the left sidebar or press Ctrl+Shift+X.
+Type Python in the search bar, and click Install next to the Python extension from Microsoft.
+Installing Python Keyboard Library
+In Visual Studio Code, open the terminal (Ctrl + ~) or open Command Prompt on Windows.
+Type and run:
+pip install keyboard
+Step-by-Step Instructions for Program Use
+
+Step 1: Starting the Program
+Launch Visual Studio Code.
+Click File > Open Folder.
+Navigate to and select the folder where your Python script (detector.py) is located.
+(Make sure the CSV file traffic_intersection.csv is in the same folder.)
+Open detector.py.
+To run the program:
+Click the Run ▶ button in the top-right corner of VS Code, or
+Press F5.
+Step 2: Tallying Vehicle Movements
+When you run the program, you'll see prompts in your terminal asking which camera view you're recording from. Use your keyboard as follows:
+
+Select Camera Direction:
+
+Press 1 for South Bound (SB)
+Press 2 for East Bound (EB)
+Press 3 for North Bound (NB)
+Press 4 for West Bound (WB)
+Tally Vehicle Movements:
+
+Press W for Left Turns
+Press E for vehicles Going Straight
+Press R for Right Turns
+Press D when you have finished tallying for that direction.
+Switch Directions:
+
+After pressing D, select the next direction (e.g., press 2 for EB after SB). You can switch directions in any order.
+Finish Intersection:
+
+After completing all four directions, press 5 to conclude data entry and move to the next step.
+Step 3: Recording the Time Interval
+Once you press 5, a Graphical User Interface (GUI) window pops up.
+From this window, select your 15-minute observation interval (between 5:00 AM and 8:00 PM).
+Click the Submit button.
+Step 4: Saving Your Data
+After submitting your interval, the program automatically saves the collected data into the file named:
+traffic_intersection.csv
+You'll see a confirmation message indicating your data is saved. Press OK.
+Step 5: Reviewing Your Recorded Data
+Your data is stored in the file traffic_intersection.csv in the same directory as your Python script.
+Open this CSV file with Excel or any spreadsheet application to view your recorded data clearly.
+Summary of Keyboard Shortcuts
+
+Key	Action
+1-4	Select camera direction (SB, EB, NB, WB)
+W	Tally Left Turns
+E	Tally Going Straight
+R	Tally Right Turns
+D	Finish tally for current direction
+5	Finish all directions and open GUI
+Troubleshooting Common Issues
+
+Ensure Python is correctly installed by typing python --version in the command line.
+If the keyboard library isn't working, verify installation by typing pip show keyboard in the terminal.
