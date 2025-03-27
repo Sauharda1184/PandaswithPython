@@ -1,0 +1,79 @@
+Sub Refresh_Data()
+'
+' Refresh_Data Macro
+'
+    On Error GoTo errMethod
+    
+    '===== NEW CODE: Time Restriction Check =====
+    Dim currentTime As Date
+    currentTime = Now()
+    
+    Dim scheduleStart As Date
+    Dim scheduleEnd As Date
+    scheduleStart = ActiveWorkbook.Worksheets("Configuration").Range("scheduleStart").Value
+    scheduleEnd = ActiveWorkbook.Worksheets("Configuration").Range("scheduleEnd").Value
+    
+    If currentTime < scheduleStart Or currentTime > scheduleEnd Then
+        MsgBox "Refresh is only allowed between " & scheduleStart & " and " & scheduleEnd, vbExclamation
+        Exit Sub
+    End If
+    
+    '===== NEW CODE: Log Start Time =====
+    ActiveWorkbook.Worksheets("Configuration").Range("startTime") = currentTime
+    
+    '===== Original Code (Progress Bar Setup) =====
+    Dim dummytimer As Double
+    dummytimer = 0.1
+    Application.StatusBar = "Updating..."
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+    
+    '===== Original Code (Background Refreshes) =====
+    ActiveWorkbook.Connections("Query - device-info Comm Manager").Refresh
+    refresh
+    
+    ' Refresh cameras only if comm manager was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("commflag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - device-info Camera 1").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 2").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 3").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 4").Refresh
+        refresh
+    End If
+    
+    '===== Original Code (Progress Updates for Cameras 1-4) =====
+    ' ... [Your existing camera refresh logic here] ...
+    
+    '===== REPLACED CODE: Log End Time Instead of "importedDate" =====
+    ActiveWorkbook.Worksheets("Configuration").Range("endTime") = Now
+    Application.StatusBar = False
+    Exit Sub
+    
+errMethod:
+    '===== REPLACED CODE: Log Error Time =====
+    ActiveWorkbook.Worksheets("Configuration").Range("endTime") = "Error at: " & Now
+    Application.StatusBar = False
+End Sub
+
+'===== Existing Helper Functions (Unchanged) =====
+Public Function sov(sekunder As Double) As Double
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
