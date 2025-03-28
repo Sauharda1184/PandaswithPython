@@ -1,0 +1,107 @@
+Sub Refresh_Data()
+    On Error GoTo errMethod
+
+    Dim dummytimer As Double
+    dummytimer = 0.1
+    
+    Dim startDate As Date, endDate As Date
+
+    With ActiveWorkbook.Worksheets("Configuration")
+        ' Read Start Date from named range iDate (merged cells B9:C9)
+        If IsDate(.Range("iDate").Value) Then
+            startDate = .Range("iDate").Value
+        Else
+            MsgBox "Please enter a valid Start Date in the merged cells (iDate)."
+            Exit Sub
+        End If
+        
+        ' Read End Date from named range eDate (merged cells B10:C10)
+        If IsDate(.Range("eDate").Value) Then
+            endDate = .Range("eDate").Value
+        Else
+            MsgBox "Please enter a valid End Date in the merged cells (eDate)."
+            Exit Sub
+        End If
+        
+        ' Ensure End Date is not before Start Date
+        If endDate < startDate Then
+            MsgBox "End Date cannot be before the Start Date."
+            Exit Sub
+        End If
+    End With
+
+    Application.StatusBar = "Updating..."
+    
+    ' Set initial progress
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+    
+    ' ***** MODIFY THE QUERY FOR DATE FILTERING *****
+    ' For example, suppose your "Query - device-info Comm Manager" returns data from a table
+    ' called "device_info" and has a date field named "DataDate". We will update its SQL command:
+    
+    Dim sqlCommMgr As String
+    sqlCommMgr = "SELECT * FROM device_info WHERE DataDate >= '" & Format(startDate, "yyyy-mm-dd") & _
+                 "' AND DataDate <= '" & Format(endDate, "yyyy-mm-dd") & "'"
+    ActiveWorkbook.Connections("Query - device-info Comm Manager").ODBCConnection.CommandText = sqlCommMgr
+    ActiveWorkbook.Connections("Query - device-info Comm Manager").Refresh
+    refresh
+    
+    ' Similarly, for the Camera queries, if they also need filtering by date:
+    Dim sqlCamera As String
+    ' Adjust table name and date field as necessary.
+    sqlCamera = "SELECT * FROM camera_info WHERE DataDate >= '" & Format(startDate, "yyyy-mm-dd") & _
+                "' AND DataDate <= '" & Format(endDate, "yyyy-mm-dd") & "'"
+                
+    With ActiveWorkbook.Worksheets("Configuration")
+        If .Range("commflag").Value <> "No Device Found" Then
+            ActiveWorkbook.Connections("Query - device-info Camera 1").ODBCConnection.CommandText = sqlCamera
+            ActiveWorkbook.Connections("Query - device-info Camera 1").Refresh
+            refresh
+            ActiveWorkbook.Connections("Query - device-info Camera 2").ODBCConnection.CommandText = sqlCamera
+            ActiveWorkbook.Connections("Query - device-info Camera 2").Refresh
+            refresh
+            ActiveWorkbook.Connections("Query - device-info Camera 3").ODBCConnection.CommandText = sqlCamera
+            ActiveWorkbook.Connections("Query - device-info Camera 3").Refresh
+            refresh
+            ActiveWorkbook.Connections("Query - device-info Camera 4").ODBCConnection.CommandText = sqlCamera
+            ActiveWorkbook.Connections("Query - device-info Camera 4").Refresh
+            refresh
+        End If
+    End With
+    
+    ' ***** Continue with your other refresh operations *****
+    ' If other queries (like Cam 1 statistics, Cam 2 statistics, etc.) also need date filtering,
+    ' you’ll need to update their CommandText similarly.
+    
+    ' Record the refresh timestamp in importedDate
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = Now
+    
+    Application.StatusBar = False
+    Exit Sub
+
+errMethod:
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "Import Error"
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = "Error occurred during import! " & Err.Description
+    Application.StatusBar = False
+End Sub
+
+Public Function sov(sekunder As Double) As Double
+    Dim starting_time As Single
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
