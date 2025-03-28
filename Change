@@ -1,0 +1,118 @@
+Sub Refresh_Data()
+    On Error GoTo errMethod
+
+    Dim dummytimer As Double
+    dummytimer = 0.1
+    
+    Dim startDate As Date, endDate As Date
+
+    With ActiveWorkbook.Worksheets("Configuration")
+        ' Read Start Date from named range iDate (merged cells B9:C9)
+        If IsDate(.Range("iDate").Value) Then
+            startDate = .Range("iDate").Value
+        Else
+            MsgBox "Please enter a valid Start Date in the merged cells (iDate)."
+            Exit Sub
+        End If
+        
+        ' Read End Date from named range eDate (merged cells B10:C10)
+        If IsDate(.Range("eDate").Value) Then
+            endDate = .Range("eDate").Value
+        Else
+            MsgBox "Please enter a valid End Date in the merged cells (eDate)."
+            Exit Sub
+        End If
+        
+        ' Ensure End Date is not before Start Date
+        If endDate < startDate Then
+            MsgBox "End Date cannot be before the Start Date."
+            Exit Sub
+        End If
+    End With
+
+    Application.StatusBar = "Updating..."
+    
+    ' Set initial progress
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+
+    ' ***** MODIFY THE QUERY FOR DATE FILTERING *****
+    Dim sqlCommMgr As String
+    sqlCommMgr = "SELECT * FROM device_info WHERE DataDate >= '" & Format(startDate, "yyyy-mm-dd") & _
+                 "' AND DataDate <= '" & Format(endDate, "yyyy-mm-dd") & "'"
+    
+    Dim conn As WorkbookConnection
+    Set conn = ActiveWorkbook.Connections("Query - device-info Comm Manager")
+    
+    ' Check the connection type and update the command text accordingly
+    Select Case conn.Type
+        Case xlConnectionTypeODBC
+            conn.ODBCConnection.CommandText = sqlCommMgr
+        Case xlConnectionTypeOLEDB
+            conn.OLEDBConnection.CommandText = sqlCommMgr
+        Case Else
+            MsgBox "The connection type for 'Query - device-info Comm Manager' is not supported for dynamic SQL modification.", vbExclamation
+            Exit Sub
+    End Select
+    
+    conn.Refresh
+    refresh
+    
+    ' ***** Repeat similar checks for Camera queries if needed *****
+    ' Example for Camera 1 query:
+    Dim sqlCamera As String
+    sqlCamera = "SELECT * FROM camera_info WHERE DataDate >= '" & Format(startDate, "yyyy-mm-dd") & _
+                "' AND DataDate <= '" & Format(endDate, "yyyy-mm-dd") & "'"
+    
+    Set conn = ActiveWorkbook.Connections("Query - device-info Camera 1")
+    Select Case conn.Type
+        Case xlConnectionTypeODBC
+            conn.ODBCConnection.CommandText = sqlCamera
+        Case xlConnectionTypeOLEDB
+            conn.OLEDBConnection.CommandText = sqlCamera
+        Case Else
+            MsgBox "The connection type for 'Query - device-info Camera 1' is not supported for dynamic SQL modification.", vbExclamation
+            Exit Sub
+    End Select
+    conn.Refresh
+    refresh
+    
+    ' --- (Add similar code for other camera queries as needed) ---
+    
+    ' Update progress and perform other refresh operations...
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.2
+    DoEvents
+
+    ' [Your remaining refresh code for Cam 1, Cam 2, etc.]
+
+    ' Record the refresh timestamp in importedDate
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = Now
+    
+    Application.StatusBar = False
+    Exit Sub
+
+errMethod:
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "Import Error"
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = "Error occurred during import! " & Err.Description
+    Application.StatusBar = False
+End Sub
+
+Public Function sov(sekunder As Double) As Double
+    Dim starting_time As Single
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
