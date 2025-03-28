@@ -1,0 +1,113 @@
+Option Explicit
+
+Sub Refresh_Data()
+    On Error GoTo errMethod
+    
+    Dim startDate As Date, endDate As Date
+    
+    ' --- 1) Read Start/End Dates from the sheet ---
+    With ActiveWorkbook.Worksheets("Configuration")
+        ' Named range "iDate" for Start Date (merged cells B9:C9)
+        If IsDate(.Range("iDate").Value) Then
+            startDate = .Range("iDate").Value
+        Else
+            MsgBox "Please enter a valid Start Date in the merged cells named 'iDate'."
+            Exit Sub
+        End If
+        
+        ' Named range "eDate" for End Date (merged cells B10:C10)
+        If IsDate(.Range("eDate").Value) Then
+            endDate = .Range("eDate").Value
+        Else
+            MsgBox "Please enter a valid End Date in the merged cells named 'eDate'."
+            Exit Sub
+        End If
+        
+        ' Ensure End Date is not before Start Date
+        If endDate < startDate Then
+            MsgBox "End Date cannot be before the Start Date."
+            Exit Sub
+        End If
+    End With
+    
+    Application.StatusBar = "Updating..."
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+    
+    ' --- 2) Build the new M formula for the query dynamically ---
+    ' The new M code will:
+    '   • Define StartDate and EndDate as M date literals.
+    '   • Call Web.Contents using your base URL from the named range "address",
+    '     appending the dates as URL parameters.
+    '   • Convert the JSON output to a table.
+    '   • (Keep your existing steps: converting record to table,
+    '     providing an alternative output if there’s an error, and filtering out "hardwareRevisions".)
+    Dim newFormula As String
+    newFormula = _
+        "let" & vbCrLf & _
+        "    StartDate = #date(" & Year(startDate) & "," & Month(startDate) & "," & Day(startDate) & ")," & vbCrLf & _
+        "    EndDate = #date(" & Year(endDate) & "," & Month(endDate) & "," & Day(endDate) & ")," & vbCrLf & _
+        "    // Build the URL by reading the base address from the named range ""address""" & vbCrLf & _
+        "    baseURL = ""http://"" & Excel.CurrentWorkbook(){[Name=""address""]}[Content]{0}[Column1]," & vbCrLf & _
+        "    url = baseURL & ""/api/v1/device-info?startDate="" & Date.ToText(StartDate, ""yyyy-MM-dd"") & ""&endDate="" & Date.ToText(EndDate, ""yyyy-MM-dd"")," & vbCrLf & _
+        "    contents = Web.Contents(url)," & vbCrLf & _
+        "    Source = Json.Document(contents)," & vbCrLf & _
+        "    #" & "Converted to Table" & " = Record.ToTable(Source)," & vbCrLf & _
+        "    AlternativeOutput = #table(type table [Name=text,Value=text], {{" & _
+             """firmwareVersion"",""No Device Found""}, {""id"",""""}," & _
+             " {""model"",""""}," & _
+             " {""name"",""""}," & _
+             " {""serialNumber"",""""} })," & vbCrLf & _
+        "    TestForError = try Source," & vbCrLf & _
+        "    output = if TestForError[HasError] then AlternativeOutput else #" & "Converted to Table" & "," & vbCrLf & _
+        "    #" & "Filtered Rows" & " = Table.SelectRows(output, each ([Name] <> ""hardwareRevisions""))" & vbCrLf & _
+        "in" & vbCrLf & _
+        "    #" & "Filtered Rows"
+    
+    ' --- 3) Update the query's M code with the new formula ---
+    ActiveWorkbook.Queries("device-info Comm Manager").Formula = newFormula
+    
+    ' --- 4) Refresh the query ---
+    ActiveWorkbook.Connections("device-info Comm Manager").Refresh
+    refresh
+    
+    ' --- 5) Continue with any other refresh operations as needed ---
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.2
+    DoEvents
+    
+    ' (Other code for refreshing additional queries can be added here)
+    
+    ' --- 6) Log the refresh timestamp ---
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate").Value = Now
+    
+    Application.StatusBar = False
+    Exit Sub
+
+errMethod:
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "Import Error"
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate").Value = "Error occurred during import! " & Err.Description
+    Application.StatusBar = False
+End Sub
+
+'--- Wait function for progress bar timing ---
+Public Function sov(sekunder As Double) As Double
+    Dim starting_time As Single
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+'--- Refresh function for page formatting and progress bar ---
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+'--- Auto_Open to clear the progress bar at startup ---
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
