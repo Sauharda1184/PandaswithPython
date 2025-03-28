@@ -1,0 +1,15 @@
+let
+    StartDate = #date(2025,3,27),
+    EndDate = #date(2025,3,27),
+    // Build the URL by reading the base address from the named range "address"
+    baseURL = "http://" & Excel.CurrentWorkbook(){[Name="address"]}[Content]{0}[Column1],
+    url = baseURL & "/api/v1/device-info?startDate=" & Date.ToText(StartDate, "yyyy-MM-dd") & "&endDate=" & Date.ToText(EndDate, "yyyy-MM-dd"),
+    contents = Web.Contents(url),
+    Source = Json.Document(contents),
+    #Converted to Table = Record.ToTable(Source),
+    AlternativeOutput = #table(type table [Name=text,Value=text], {{"firmwareVersion","No Device Found"}, {"id",""}, {"model",""}, {"name",""}, {"serialNumber",""} }),
+    TestForError = try Source,
+    output = if TestForError[HasError] then AlternativeOutput else #Converted to Table,
+    #Filtered Rows = Table.SelectRows(output, each ([Name] <> "hardwareRevisions"))
+in
+    #Filtered Rows
