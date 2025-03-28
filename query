@@ -1,0 +1,14 @@
+let
+    contents = Web.Contents("http://" & Excel.CurrentWorkbook(){[Name="address"]}[Content]{0}[Column1]  & "/api/v1/device-info"),
+    Source = Json.Document(contents),
+    #"Converted to Table" = Record.ToTable(Source),
+    AlternativeOutput =#table(type table [Name=text,Value=text], {{"firmwareVersion","No Device Found"},
+                                                                  {"id",""},
+                                                                  {"model",""},
+                                                                  {"name",""},
+                                                                  {"serialNumber",""}}),
+    TestForError=try Source,
+    output=if TestForError[HasError] then AlternativeOutput else #"Converted to Table",
+    #"Filtered Rows" = Table.SelectRows(output, each ([Name] <> "hardwareRevisions"))
+in
+    #"Filtered Rows"
