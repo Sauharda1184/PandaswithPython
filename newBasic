@@ -1,0 +1,92 @@
+Sub Refresh_Data()
+    On Error GoTo errMethod
+
+    Dim dummytimer As Double
+    dummytimer = 0.1
+    
+    Dim startDate As Date, endDate As Date
+
+    With ActiveWorkbook.Worksheets("Configuration")
+        ' Read Start Date from merged cells B9:C9 (value is in B9)
+        If IsDate(.Range("B9").Value) Then
+            startDate = .Range("B9").Value
+        Else
+            MsgBox "Please enter a valid Start Date in merged cells B9:C9."
+            Exit Sub
+        End If
+        
+        ' Read End Date from merged cells B10:C10 (value is in B10)
+        If IsDate(.Range("B10").Value) Then
+            endDate = .Range("B10").Value
+        Else
+            MsgBox "Please enter a valid End Date in merged cells B10:C10."
+            Exit Sub
+        End If
+        
+        ' Ensure the End Date is not before the Start Date
+        If endDate < startDate Then
+            MsgBox "End Date cannot be before the Start Date."
+            Exit Sub
+        End If
+    End With
+
+    Application.StatusBar = "Updating..."
+    
+    ' Set initial progress
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.05
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar").Select
+    
+    ' Refresh Comm Manager
+    ActiveWorkbook.Connections("Query - device-info Comm Manager").Refresh
+    refresh
+    
+    ' Refresh cameras only if Comm Manager was successful
+    If ActiveWorkbook.Worksheets("Configuration").Range("commflag") <> "No Device Found" Then
+        ActiveWorkbook.Connections("Query - device-info Camera 1").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 2").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 3").Refresh
+        refresh
+        ActiveWorkbook.Connections("Query - device-info Camera 4").Refresh
+        refresh
+    End If
+    
+    ' Refresh screen
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.2
+    DoEvents
+    
+    ' --- The remainder of your refresh operations (cameras, stats, etc.) ---
+    ' [Your existing code for refreshing Cam 1, Cam 2, Cam 3, and Cam 4 goes here]
+    
+    ' Record the refresh date/time and store the End Date (for logging or later use)
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = Now
+    ActiveWorkbook.Worksheets("Configuration").Range("importedEndDate") = endDate
+
+    Application.StatusBar = False
+    Exit Sub
+
+errMethod:
+    ActiveWorkbook.Worksheets("Configuration").Range("importedDate") = "Error occurred during import!"
+    Application.StatusBar = False
+End Sub
+
+Public Function sov(sekunder As Double) As Double
+    Dim starting_time As Single
+    starting_time = Timer
+    Do
+        DoEvents
+    Loop Until (Timer - starting_time) >= sekunder
+End Function
+
+Public Function refresh()
+    With ActiveWorkbook.Worksheets("Configuration").Range("pagewidth")
+        .ColumnWidth = 19.29
+    End With
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = 0.1
+    DoEvents
+End Function
+
+Private Sub Auto_Open()
+    ActiveWorkbook.Worksheets("Configuration").Range("progressbar") = ""
+End Sub
