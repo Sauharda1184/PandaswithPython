@@ -1,0 +1,24 @@
+Slide: Hardware and Software Description
+
+"Let's start with the hardware and software we're using for our project.
+
+For hardware, we're utilizing Google Colab, which provides us with access to a T4 GPU for faster training of our model. The T4 GPU is particularly useful for processing the large dataset efficiently and reducing training time.
+
+As for the software, we are working with Python 3.9 or above. Python is a powerful programming language that is widely used in machine learning projects due to its flexibility and rich ecosystem of libraries.
+
+For machine learning tasks, we're using TensorFlow 2.x along with the Keras API. TensorFlow is a popular open-source framework for building and deploying machine learning models, and Keras, as an API within TensorFlow, allows for easy and intuitive model building. For data manipulation, we're using NumPy and Pandas, which are essential for handling and processing large datasets efficiently.
+
+For visualization, Matplotlib and Seaborn are our go-to libraries. They help us generate charts and graphs, such as confusion matrices, to analyze the performance of the model."
+
+Slide: Project Risks
+
+"Next, let's discuss some of the project risks that we may encounter:
+
+Model Generalization Risk: Since we're working with a dataset that includes handwritten letters, there is a risk that the model may overfit the training data and fail to generalize well on unseen data. To mitigate this, we are using techniques like validation splitting and cross-validation.
+
+Hardware Limitations: While Google Colab provides us with a T4 GPU, there may be limitations in terms of runtime and resource availability, which could slow down the training process or affect model performance if resources are limited.
+
+Data Quality and Preprocessing: Our model’s performance heavily depends on the quality of the dataset. Incorrectly preprocessed data (like poorly normalized pixel values or improperly oriented images) can affect training and lead to inaccurate predictions. To minimize this risk, we’ve carefully preprocessed the data, including normalization, reshaping, and correcting orientations.
+
+Dependency and Versioning Risks: We are using several libraries and dependencies such as TensorFlow, Keras, and Pandas. It's crucial that these libraries are compatible with each other to ensure smooth execution. Any issues related to library versions or updates may cause unexpected behavior in our training process."
+
